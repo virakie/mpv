@@ -1,20 +1,6 @@
 # mpv config
 
-Switchable subtitle styles, a subtitle dictionary, a thin seek bar, a track picker.
-
-## Install
-
-Copy everything into `%APPDATA%\mpv`.
-
-```powershell
-robocopy "path\to\this\repo" "$env:APPDATA\mpv" /E /XD .git
-```
-
-Try it without touching your real config:
-
-```powershell
-& "C:\Program Files\mpv\mpv.exe" "--config-dir=path\to\this\repo" "video.mkv"
-```
+My personal config - switchable subtitle styles, a subtitle dictionary, a thin seek bar, a track picker.
 
 ---
 
