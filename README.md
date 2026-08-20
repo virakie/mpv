@@ -1,17 +1,16 @@
 # mpv config
 
-My mpv setup. Custom subtitle styling, a small seek bar instead of the default
-OSC, a track picker, and a subtitle dictionary.
+Switchable subtitle styles, a subtitle dictionary, a thin seek bar, a track picker.
 
 ## Install
 
-Copy everything into `%APPDATA%\mpv` (Windows) and it just works.
+Copy everything into `%APPDATA%\mpv`.
 
 ```powershell
 robocopy "path\to\this\repo" "$env:APPDATA\mpv" /E /XD .git
 ```
 
-To try it without touching your real config:
+Try it without touching your real config:
 
 ```powershell
 & "C:\Program Files\mpv\mpv.exe" "--config-dir=path\to\this\repo" "video.mkv"
@@ -21,105 +20,98 @@ To try it without touching your real config:
 
 ## Subtitles
 
-The main thing this config does. Subtitle looks are saved as **presets**, split
-into two lists you flip through separately: the **font**, and the **style**
-(size, position, outline, shadow).
+Two lists you flip through separately: the font, and the style.
 
-| Key | What it does |
+| Key | Does |
 | --- | --- |
-| `Alt` + `←` `→` | previous / next **font** |
-| `Alt` + `↑` `↓` | previous / next **style** |
-| `Alt` + `i` | show which font and style are on right now |
-| `Alt` + `a` | open the adjust panel (see below) |
-| `g` / `f` | subtitles bigger / smaller |
-| `t` / `r` | subtitles up / down |
+| `Alt` + `←` `→` | font |
+| `Alt` + `↑` `↓` | style |
+| `Alt` + `i` | show what is on |
+| `Alt` + `a` | adjust panel |
+| `g` / `f` | bigger / smaller |
+| `t` / `r` | up / down |
 
-**Styles:** Fansub, Clean, Box, Crunchyroll, Netflix, Retro, Big, Compact, Native.
-Crunchyroll and Netflix copy how those services actually draw their subtitles.
-Native turns the styling off so anime signs and karaoke look how the subber
-intended.
+Styles: Fansub, Clean, Box, Crunchyroll, Netflix, Retro, Big, Compact, Native.
 
-**Fonts:** Inter, Netflix Sans, Open Sans, Atkinson Hyperlegible, Tiresias,
+Crunchyroll and Netflix copy how those services really draw subtitles. Native
+turns styling off, so anime signs and karaoke look how the subber made them.
+
+Fonts: Inter, Netflix Sans, Open Sans, Atkinson Hyperlegible, Tiresias,
 Trebuchet, JetBrains Mono.
 
-Fansub is the default, and it comes back every time subtitles turn on, so every
-video starts the same. To use a different one as your default, move its name to
-the front of the `styles=` line in `script-opts/substyle.conf`.
+Fansub is the default. It comes back every time subs turn on. To change the
+default, move a name to the front of `styles=` in `script-opts/substyle.conf`.
 
 ### Adjust panel — `Alt` + `a`
 
-Tweak the subtitles live and watch them change.
-
-| Key | What it does |
+| Key | Does |
 | --- | --- |
-| `←` `→` | change the value |
-| `↑` `↓` | pick a different setting |
-| `r` | undo, back to the preset |
-| `s` | save into the preset you are on |
-| `w` | save as a brand new preset |
-| `x` | delete a preset you saved with `w` |
+| `←` `→` | change value |
+| `↑` `↓` | pick setting |
+| `r` | undo |
+| `s` | save into this preset |
+| `w` | save as new preset |
+| `x` | delete a saved preset |
 | `Esc` | close |
 
-Presets you save turn up in the `Alt` + `↑` `↓` list next time you open mpv.
+Saved presets show up in the `Alt` + `↑` `↓` list next launch.
 
 ### Dictionary — `d`
 
-See a word you don't know? Press `d`. The video pauses, the subtitle line comes
-back with every word clickable, and the hardest-looking word is already looked
-up. Click or arrow onto any other word to look that one up. `Esc` resumes.
+Press `d` on a word you don't know. Video pauses. The line comes back with every
+word clickable, hardest word already looked up. Click another word to look it up
+instead. `Esc` resumes.
 
-Definitions are saved, so a word you have looked up once works offline forever
-after. Text subtitles only — Blu-ray picture subs have no text to read.
+Definitions are saved, so looked-up words work offline after. Text subs only.
 
 ---
 
 ## Everything else
 
-| Key | What it does |
+| Key | Does |
 | --- | --- |
-| `Tab` | audio + subtitle track picker (click a track, or arrow to it) |
-| `←` `→` | seek 2 seconds |
-| `↑` `↓` | volume by 1 |
-| `=` / `-` | speed up / slow down |
-| `[` `]` | previous / next in playlist |
+| `Tab` | audio + subtitle track picker |
+| `←` `→` | seek 2s |
+| `↑` `↓` | volume |
+| `=` / `-` | speed |
+| `[` `]` | playlist |
 | `c` | crop |
-| `e` / `E` | mark GIF start / end, then `Ctrl` + `e` to make it |
+| `e` / `E` | GIF start / end, then `Ctrl` + `e` to make |
 | `W` | webm encoder |
-| `Ctrl` + `c` / `v` | copy / paste a video path or URL |
-| `s` | screenshot (goes to `E:\Virak\Pictures\Screenshots`) |
+| `Ctrl` + `c` / `v` | copy / paste path or URL |
+| `s` | screenshot |
 
-**Mouse:** drag the seek bar to skim through the video. Drag anywhere else to
-move the window.
-
----
-
-## Things that might surprise you
-
-- **Every video loops.** `loop=yes` in `mpv.conf` — delete that line if you
-  don't want it.
-- **`w` `o` `p` `j` `l` `v` `a` do nothing** on purpose, so they can't be hit by
-  accident. They are listed at the bottom of `input.conf`.
-- **No default seek bar.** `minimal.lua` draws a thin one at the bottom instead.
-- **English audio is picked automatically** when a video has more than one track
-  (`alang=en,eng`).
-- The window opens at **half your screen size** (`autofit=50%`).
+Drag the seek bar to skim. Drag anywhere else to move the window.
 
 ---
 
-## What's in here
+## Gotchas
 
-| File | What it is |
+- Every video loops. Delete `loop=yes` from `mpv.conf` to stop it.
+- `w` `o` `p` `j` `l` `v` `a` do nothing on purpose. See bottom of `input.conf`.
+- No default seek bar. `minimal.lua` draws a thin one.
+- English audio auto-picked when there are several tracks.
+- Window opens at half your screen size.
+
+---
+
+## Files
+
+| File | Is |
 | --- | --- |
-| `mpv.conf` | settings, and the subtitle presets at the bottom |
+| `mpv.conf` | settings, subtitle presets at the bottom |
 | `input.conf` | keybinds |
-| `scripts/substyle.lua` | subtitle preset switching + the adjust panel |
-| `scripts/subdict.lua` | the subtitle dictionary |
-| `scripts/track-menu.lua` | the `Tab` track picker |
-| `scripts/minimal.lua` | the seek bar |
-| `scripts/thumbfast.lua` | thumbnail previews on the seek bar |
-| `scripts/autoload.lua` | queues up the rest of the folder automatically |
+| `scripts/substyle.lua` | style switching + adjust panel |
+| `scripts/subdict.lua` | dictionary |
+| `scripts/track-menu.lua` | `Tab` picker |
+| `scripts/minimal.lua` | seek bar |
+| `scripts/thumbfast.lua` | seek bar thumbnails |
+| `scripts/autoload.lua` | queues the rest of the folder |
 | `scripts/gifgen.lua`, `webm.lua` | clip exporting |
-| `script-opts/` | settings for each script |
-| `fonts/` | subtitle fonts, loaded without installing them |
+| `script-opts/` | per-script settings |
+| `fonts/` | loaded without installing |
 
-Presets you save with `w` land in `substyle-custom.conf`.
+Fonts here: Inter, Open Sans, Atkinson Hyperlegible, Tiresias, JetBrains Mono.
+Trebuchet and Verdana come with Windows. Netflix Sans you need yourself.
+
+Presets saved with `w` go to `substyle-custom.conf`.
