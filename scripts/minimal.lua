@@ -42,6 +42,9 @@ local state = {
 	maximize_timeout = { kill = function() end, resume = function() end },
 	time_observed = false,
 	press_bounded = false,
+	dragging = false,
+	-- --window-dragging as it was before we borrowed it, see pbar_update()
+	window_dragging = nil,
 	fullscreen = false,
 	thumbfast = {
 		width = 0,
@@ -82,6 +85,10 @@ local opt = {
 	minimize_timeout = 3,
 	maximize_timeout = 1.5,
 	maximize_on_seek = true,
+	-- while dragging the playhead, seek to keyframes rather than decoding
+	-- an exact frame each time. Set to no for frame-accurate skimming, at
+	-- the cost of it lagging behind the pointer on heavy files.
+	drag_seek_keyframes = true,
 
 	debug = false,
 
@@ -434,14 +441,34 @@ local function pbar_draw()
 	render()
 end
 
-local function pbar_pressed()
+-- Seek to wherever the pointer sits along the bar. Mid-drag we ask for
+-- keyframes, which is what keeps skimming responsive on a long file; the
+-- position you actually land on, when the button comes up, is exact.
+local function seek_to_mouse(exact)
+	if (not state.duration or not state.mouse) then
+		return
+	end
+	local sec = hover_to_sec(state.mouse.x, state.dpy_w, state.duration)
+	if (not exact and opt.drag_seek_keyframes) then
+		mp.commandv("seek", sec, "absolute+keyframes")
+	else
+		mp.commandv("seek", sec, "absolute+exact")
+	end
+end
+
+local function pbar_pressed(t)
+	-- complex binding, so t.event tells press from release
+	if (t and t.event == "up") then
+		if (state.dragging) then
+			state.dragging = false
+			seek_to_mouse(true)
+		end
+		return
+	end
 	zassert(state.mouse.hover)
 	zassert(state.pbar == PBAR_ACTIVE)
-	if (state.duration) then
-		mp.set_property("time-pos",  hover_to_sec(
-			state.mouse.x, state.dpy_w, state.duration
-		));
-	end
+	state.dragging = true
+	seek_to_mouse(true)
 end
 
 local function pbar_update(next_state)
@@ -468,8 +495,17 @@ local function pbar_update(next_state)
 		state.pbar = PBAR_ACTIVE
 		pbar_draw()
 		if (not state.press_bounded) then
-			mp.add_forced_key_binding('mbtn_left', 'pbar_pressed', pbar_pressed)
+			mp.add_forced_key_binding('mbtn_left', 'pbar_pressed',
+			                          pbar_pressed, { complex = true })
 			state.press_bounded = true
+		end
+		-- mpv starts moving the window on any left press its input system
+		-- does not claim, which is exactly why dragging the playhead used
+		-- to drag the window instead. Borrow the option while the bar is
+		-- up, and hand it back below when the bar goes away.
+		if (state.window_dragging == nil) then
+			state.window_dragging = mp.get_property_bool("window-dragging")
+			mp.set_property_bool("window-dragging", false)
 		end
 		if (not state.time_observed) then
 			mp.observe_property("time-pos", nil, pbar_draw)
@@ -507,6 +543,11 @@ local function pbar_update(next_state)
 			mp.remove_key_binding('pbar_pressed')
 			state.press_bounded = false
 		end
+		if (state.window_dragging ~= nil) then
+			mp.set_property_bool("window-dragging", state.window_dragging)
+			state.window_dragging = nil
+		end
+		state.dragging = false
 		state.mouse = nil
 		mp.set_property_native("user-data/osc/draw-preview", nil)
 		if (state.thumbfast.available) then
@@ -557,6 +598,16 @@ local function update_mouse_pos(kind, mouse)
 	zassert(dpy_w > 0)
 	zassert(dpy_h > 0)
 	zassert(mouse)
+
+	-- A held button keeps the bar active even if the pointer wanders off it,
+	-- so a drag does not die the moment you stray upwards or past an edge.
+	if (state.dragging) then
+		state.minimize_timeout:kill()
+		state.maximize_timeout:kill()
+		pbar_update(PBAR_ACTIVE)
+		seek_to_mouse(false)
+		return
+	end
 
 	-- TODO: ensure there's enough height to draw our stuff ?
 	if (mouse_isactive(state.mouse_prev) and mouse_isactive(mouse)) then
