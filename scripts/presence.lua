@@ -415,6 +415,9 @@ end
 
 local function set_enabled(state)
     enabled = state
+    -- The plugin keys off this: while it exists, the script owns the presence
+    -- and the plugin's own toggle stays out of the way.
+    mp.set_property("user-data/presence/active", enabled and "yes" or "no")
     if enabled then
         mp.osd_message("Presence: on", 1.5)
         identify(false)
@@ -447,6 +450,10 @@ end)
 if o.enabled then
     mp.register_event("file-loaded", function() set_enabled(true) end)
 end
+
+-- Announce ourselves at load, so the plugin knows a script is in charge even
+-- before the first toggle.
+mp.set_property("user-data/presence/active", "no")
 
 -- Debug helper: script-message presence-parse "<filename>"
 mp.register_script_message("presence-parse", function(name, folder)
