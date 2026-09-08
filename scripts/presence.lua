@@ -213,6 +213,10 @@ function tvmaze.search(title, _, done)
                 id = show.id, name = show.name, kind = "tv",
                 year = tonumber((show.premiered or ""):sub(1, 4)),
                 score = hit.score,
+                -- Discord accepts a plain URL as the large image, so the
+                -- poster needs no uploading anywhere. medium is plenty at
+                -- the size Discord draws it.
+                image = (show.image or {}).medium or (show.image or {}).original,
             }
         end
         done(out)
@@ -242,6 +246,9 @@ function tmdb.search(title, kind, done)
                 year = tonumber(date:sub(1, 4)),
                 -- TMDB has no match score, so rank by position
                 score = (i == 1) and 0.9 or 0.5,
+                image = hit.poster_path
+                    and ("https://image.tmdb.org/t/p/w500" .. hit.poster_path)
+                    or nil,
             }
         end
         done(out)
@@ -313,6 +320,10 @@ end
 
 local function build(info, match, episode_title)
     local activity = { type = "watching", name = match and match.name or info.title }
+    if match and match.image then
+        activity.image = match.image
+        activity.image_text = match.name
+    end
     local bits = {}
     if info.kind == "tv" and o.show_episode and info.episode then
         if info.season then
