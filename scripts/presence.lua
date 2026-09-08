@@ -39,6 +39,17 @@ local o = {
 }
 options.read_options(o, "presence")
 
+-- The TMDB key is a credential and this config is a public repo, so it lives
+-- in presence-key.txt next to the config rather than in presence.conf. That
+-- file is git-ignored; the conf stays safe to publish.
+if o.tmdb_key == "" then
+    local key_file = io.open(mp.command_native({"expand-path", "~~/presence-key.txt"}), "r")
+    if key_file then
+        o.tmdb_key = (key_file:read("*l") or ""):gsub("%s", "")
+        key_file:close()
+    end
+end
+
 local cache_path = mp.command_native({"expand-path", "~~/presence-cache.json"})
 
 -- Bumped whenever a remembered entry gains a new field. Entries stamped with
