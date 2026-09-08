@@ -2,6 +2,29 @@
 
 My personal config - switchable subtitle styles, a subtitle dictionary, a thin seek bar, a track picker.
 
+## Install
+
+Unzip [the latest release](https://github.com/virakie/mpv/releases) into your
+mpv config folder and that is it.
+
+| OS | Folder |
+| --- | --- |
+| Windows | `%APPDATA%\mpv` |
+| Linux / macOS | `~/.config/mpv` |
+
+Everything works out of the box. Two optional extras:
+
+- **Film posters in the Discord status** need a free
+  [TMDB key](https://www.themoviedb.org/settings/api). Put it on one line in a
+  file called `presence-key.txt` next to `mpv.conf`. Without it, TV still works
+  through TVmaze, which has no films.
+- **Screenshots** land in a `screenshots` folder inside the config. Change
+  `screenshot-dir` in `mpv.conf` if you want them elsewhere.
+
+The Discord plugin is Windows-only. The rest works anywhere.
+
+To build the zip yourself: `powershell -ExecutionPolicy Bypass -File package.ps1`
+
 ---
 
 ## Subtitles
@@ -113,3 +136,10 @@ Fonts here: Inter, Open Sans, Atkinson Hyperlegible, Tiresias, JetBrains Mono.
 Trebuchet and Verdana come with Windows. Netflix Sans you need yourself.
 
 Presets saved with `w` go to `substyle-custom.conf`.
+
+## Credits
+
+`scripts/rich-presence.dll` is built from
+[goodtrailer/mpv-rich-presence](https://github.com/goodtrailer/mpv-rich-presence),
+modified to take the show name from `presence.lua`. It is AGPL-3.0, so the
+modified source has to be published alongside the binary - see `licenses/`.
