@@ -69,7 +69,7 @@ Saved presets show up in the `Alt` + `↑` `↓` list next launch.
 
 Toggle it on and Discord shows "Watching <show name>" instead of mpv. It reads
 the filename, asks TVmaze what the show is, and asks you only when unsure.
-`Alt` + `Shift` + `p` re-picks if it guessed wrong. Your answer is remembered
+`Alt` + `o` re-picks if it guessed wrong. Your answer is remembered
 per folder, so a season only asks once.
 
 The plugin that talks to Discord is bundled (`scripts/rich-presence.dll`, from
