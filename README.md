@@ -42,6 +42,16 @@ default, move a name to the front of `styles=` in `script-opts/substyle.conf`.
 
 Saved presets show up in the `Alt` + `↑` `↓` list next launch.
 
+### Discord presence — `Alt` + `p`
+
+Toggle it on and Discord shows "Watching <show name>" instead of mpv. It reads
+the filename, asks TVmaze what the show is, and asks you only when unsure.
+`Alt` + `Shift` + `p` re-picks if it guessed wrong. Your answer is remembered
+per folder, so a season only asks once.
+
+Needs the companion Discord plugin to actually reach Discord. Without it the
+script still works and shows you what it would send.
+
 ### Dictionary — `d`
 
 Press `d` on a word you don't know. Video pauses. The line comes back with every
@@ -89,6 +99,7 @@ Drag the seek bar to skim. Drag anywhere else to move the window.
 | `input.conf` | keybinds |
 | `scripts/substyle.lua` | style switching + adjust panel |
 | `scripts/subdict.lua` | dictionary |
+| `scripts/presence.lua` | works out what you are watching, for Discord |
 | `scripts/track-menu.lua` | `Tab` picker |
 | `scripts/minimal.lua` | seek bar |
 | `scripts/thumbfast.lua` | seek bar thumbnails |
