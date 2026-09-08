@@ -41,6 +41,12 @@ options.read_options(o, "presence")
 
 local cache_path = mp.command_native({"expand-path", "~~/presence-cache.json"})
 
+-- Bumped whenever a remembered entry gains a new field. Entries stamped with
+-- an older number are looked up again rather than served stale, which is how
+-- shows remembered before posters existed pick one up without you having to
+-- know the cache file is there.
+local CACHE_VERSION = 2
+
 local enabled = false
 local current = nil        -- the activity we last published
 local picking = false
@@ -399,6 +405,7 @@ close_picker = function(take)
         local folder = mp.get_property("working-directory")
         local path = mp.get_property("path") or ""
         local dir = utils.split_path(path)
+        choices[chosen].v = CACHE_VERSION
         load_cache()[dir or folder] = choices[chosen]
         save_cache()
         finish(pending_info, choices[chosen])
@@ -428,6 +435,10 @@ local function identify(force_pick)
 
     -- A folder you have already answered for never asks again.
     local remembered = not force_pick and load_cache()[dir]
+    if remembered and remembered.v ~= CACHE_VERSION then
+        msg.verbose("re-looking up " .. tostring(remembered.name) .. ": stale entry")
+        remembered = nil
+    end
     if remembered then
         finish(info, remembered)
         return
@@ -452,6 +463,7 @@ local function identify(force_pick)
             for i = 1, math.min(#hits, 6) do short[i] = hits[i] end
             open_picker(info, short)
         else
+            top.v = CACHE_VERSION
             load_cache()[dir] = top
             save_cache()
             finish(info, top)
