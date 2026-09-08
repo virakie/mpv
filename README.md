@@ -49,8 +49,9 @@ the filename, asks TVmaze what the show is, and asks you only when unsure.
 `Alt` + `Shift` + `p` re-picks if it guessed wrong. Your answer is remembered
 per folder, so a season only asks once.
 
-Needs the companion Discord plugin to actually reach Discord. Without it the
-script still works and shows you what it would send.
+The plugin that talks to Discord is bundled (`scripts/rich-presence.dll`, from
+goodtrailer/mpv-rich-presence, AGPL, licences in `licenses/`). Discord has to be
+running. Your mpv window title changes to the show name while it is on.
 
 ### Dictionary — `d`
 

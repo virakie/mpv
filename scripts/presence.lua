@@ -32,6 +32,10 @@ local o = {
     timeout = 8,
     -- size of the picker text, out of 720
     osd_size = 20,
+    -- Drive the prebuilt rich-presence.dll, which reads the media title. This
+    -- is what makes Discord say the show instead of mpv without compiling
+    -- anything. It also renames the mpv window, which is the price.
+    drive_plugin = true,
 }
 options.read_options(o, "presence")
 
@@ -260,9 +264,40 @@ end
 -- Publishing
 --------------------------------------------------------------------------
 
+-- The prebuilt plugin builds its presence from `media-title`, and
+-- `force-media-title` is the writable override for that. So this is how the
+-- show name reaches Discord without a custom build. Everything has to fit on
+-- the one line, hence name and details joined together.
+--
+-- Putting it back is the awkward half: force-media-title cannot be cleared.
+-- Setting it to "" reports success and changes nothing, and setting it to nil
+-- errors. So the default title has to be rebuilt by hand, the same way mpv
+-- would: the metadata title if the file has one, otherwise the filename.
+local function real_title()
+    local meta = mp.get_property("metadata/by-key/title")
+    if meta and meta ~= "" then return meta end
+    return mp.get_property("filename") or ""
+end
+
+local function drive_plugin(activity)
+    if not o.drive_plugin then return end
+    if activity then
+        local line = activity.name
+        if activity.details and activity.details ~= "" then
+            line = line .. "  -  " .. activity.details
+        end
+        mp.set_property("force-media-title", line)
+        mp.commandv("script-message-to", "rich_presence", "on")
+    else
+        mp.commandv("script-message-to", "rich_presence", "off")
+        mp.set_property("force-media-title", real_title())
+    end
+end
+
 local function publish(activity)
     current = activity
     mp.set_property_native("user-data/presence/activity", activity or {})
+    drive_plugin(activity)
     if not activity then
         overlay.data = ""
         overlay:update()
@@ -435,7 +470,12 @@ mp.add_key_binding(nil, "repick", function()
 end)
 
 mp.register_event("file-loaded", function()
-    if enabled then identify(false) end
+    if enabled then
+        identify(false)
+    elseif o.drive_plugin then
+        -- a new file must not keep wearing the last one's name
+        mp.set_property("force-media-title", real_title())
+    end
 end)
 
 -- Keep the elapsed time honest after a seek.
