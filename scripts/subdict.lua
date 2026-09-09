@@ -30,6 +30,13 @@ options.read_options(o, "subdict")
 
 local cache_path = mp.command_native({"expand-path", "~~/subdict-cache.json"})
 
+-- The palette osd-theme uses, so a definition reads like every other message
+-- this config puts on screen.
+local LABEL   = "&HFFD9CE&"
+local VALUE   = "&HF3AB5D&"
+local DETAIL  = "&HE6B9AC&"
+local OUTLINE = "&H36231E&"
+
 -- Words that are never the one you paused for.
 local COMMON = {}
 for word in ([[the be to of and a in that have i it for not on with he as you
@@ -136,24 +143,29 @@ local function draw_panel()
     if entry and entry.phonetic and entry.phonetic ~= "" then
         head = head .. "   " .. entry.phonetic
     end
-    rows[#rows + 1] = "{\\1c&H4AD2FF&}" .. ass_escape(head)
+    rows[#rows + 1] = "{\\b1\\1c" .. LABEL .. "}" .. ass_escape(head)
+
+    -- Definitions sit a size down from the headword, the way osd-theme puts
+    -- its detail line under its label.
+    local small = "{\\b0\\fs" .. o.font_size .. "}"
 
     if status then
-        rows[#rows + 1] = "{\\1c&HA0A0A0&}" .. ass_escape(status)
+        rows[#rows + 1] = small .. "{\\1c" .. DETAIL .. "}" .. ass_escape(status)
     elseif entry then
         for _, sense in ipairs(entry.senses) do
             local first = true
             for _, line in ipairs(wrap(sense, o.wrap_at)) do
-                rows[#rows + 1] = (first and "{\\1c&HFFFFFF&}" or "{\\1c&HE0E0E0&}\\h\\h")
-                                  .. ass_escape(line)
+                rows[#rows + 1] = small
+                    .. "{\\1c" .. (first and VALUE or DETAIL) .. "}"
+                    .. (first and "" or "\\h\\h") .. ass_escape(line)
                 first = false
             end
         end
     end
 
     panel.data = string.format(
-        "{\\an7\\pos(24,18)\\fs%d\\bord1.6\\shad0\\fn%s\\3c&H000000&}%s",
-        o.font_size, font(), table.concat(rows, "\\N"))
+        "{\\an7\\pos(26,24)\\fs%d\\bord2\\shad1\\fn%s\\3c%s\\4c%s}%s",
+        o.font_size + 6, font(), OUTLINE, OUTLINE, table.concat(rows, "\\N"))
     panel:update()
 end
 
@@ -161,10 +173,10 @@ end
 local function draw_strip()
     local events = {}
     for i, w in ipairs(words) do
-        local color = (i == selected) and "4AD2FF" or "FFFFFF"
+        local color = (i == selected) and VALUE or LABEL
         events[#events + 1] = string.format(
-            "{\\an7\\pos(%.1f,%.1f)\\fs%d\\bord1.6\\shad0\\fn%s\\3c&H000000&\\1c&H%s&}%s",
-            w.x, w.y, o.font_size, font(), color, ass_escape(w.text))
+            "{\\an7\\pos(%.1f,%.1f)\\fs%d\\bord2\\shad1\\fn%s\\3c%s\\4c%s\\1c%s}%s",
+            w.x, w.y, o.font_size, font(), OUTLINE, OUTLINE, color, ass_escape(w.text))
     end
     strip.data = table.concat(events, "\n")
     strip:update()
@@ -222,7 +234,10 @@ lookup = function(word, fallbacks)
 
     mp.command_native_async({
         name = "subprocess", capture_stdout = true, playback_only = false,
-        args = { "curl", "-s", "-m", tostring(o.timeout),
+        -- -4 because the odd IPv6 attempt here stalls until the whole
+        -- timeout is spent, and one retry covers the API's occasional hiccup.
+        args = { "curl", "-s", "-4", "--connect-timeout", "4", "--retry", "1",
+                 "-m", tostring(o.timeout),
                  "https://api.dictionaryapi.dev/api/v2/entries/en/" .. word },
     }, function(ok, res)
         if not open then return end

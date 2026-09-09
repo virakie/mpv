@@ -63,7 +63,7 @@ local function draw(body, duration)
         hide_timer = nil
     end
     overlay.data = string.format(
-        "{\\an7\\pos(24,18)\\fs%d\\bord1.6\\shad0\\fn%s\\3c&H000000&}%s",
+        "{\\an7\\pos(26,24)\\fs%d\\bord2\\shad1\\fn%s\\3c&H36231E&\\4c&H36231E&}%s",
         o.osd_size, mp.get_property("osd-font") or "sans-serif", body)
     overlay:update()
     if duration then
@@ -331,17 +331,20 @@ end
 draw_panel = function(note)
     -- ASS colours are &HBBGGRR&, i.e. reversed from the #RRGGBB you write
     -- everywhere else in this config.
-    local rows = { "{\\1c&HFFFFFF&}" ..
+    -- osd-theme's palette: the heading reads as a label, the row you are on
+    -- as a value, everything else as detail.
+    local LABEL, VALUE, DETAIL = "&HFFD9CE&", "&HF3AB5D&", "&HE6B9AC&"
+    local rows = { "{\\b1\\1c" .. LABEL .. "}" ..
                    ass_escape(pretty(sets.style.list[sets.style.index] or "-")) }
     for i, param in ipairs(params) do
         -- libass trims a leading plain space, which would pull every
         -- unselected row one character left of the marked one. \h is the
         -- ASS hard space and survives.
-        rows[#rows + 1] =
-            (i == selected and "{\\1c&H4AD2FF&}>" or "{\\1c&HE0E0E0&}\\h") ..
+        rows[#rows + 1] = "{\\b0}" ..
+            (i == selected and "{\\1c" .. VALUE .. "}>" or "{\\1c" .. DETAIL .. "}\\h") ..
             ass_escape(string.format(" %-12s %s", param.label, value_of(param)))
     end
-    rows[#rows + 1] = "{\\1c&HA0A0A0&}" .. ass_escape(note or
+    rows[#rows + 1] = "{\\b0\\1c" .. DETAIL .. "}" .. ass_escape(note or
         "Left/Right change  Up/Down pick  r reset  " ..
         "s save  w save as new  x delete  ESC close")
     draw(table.concat(rows, "\\N"), nil)

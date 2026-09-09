@@ -59,14 +59,13 @@ local function section(items, tracks, kind, prop, off_label)
     items[#items].separator = true
 end
 
-local function open()
+local function build()
     local tracks = mp.get_property_native("track-list") or {}
     local items = {}
     section(items, tracks, "audio", "aid", "No audio")
     section(items, tracks, "sub", "sid", "Subtitles off")
     items[#items].separator = false
-
-    mp.commandv("script-message-to", "uosc", "open-menu", utils.format_json({
+    return {
         type = "track-picker",
         title = "Tracks",
         items = items,
@@ -74,7 +73,36 @@ local function open()
         -- way the old menu did.
         keep_open = true,
         anchor_at_cursor = true,
-    }))
+        on_close = { "script-message-to", mp.get_script_name(), "closed" },
+    }
 end
 
-mp.add_key_binding(nil, "open", open)
+local is_open = false
+
+-- Picking a track runs the command, but the menu it was picked from is a
+-- snapshot: without this the tick stays on the old track until you reopen it.
+local function refresh()
+    if not is_open then return end
+    mp.commandv("script-message-to", "uosc", "update-menu",
+                utils.format_json(build()))
+end
+
+local function watch(on)
+    if on then
+        mp.observe_property("aid", "native", refresh)
+        mp.observe_property("sid", "native", refresh)
+    else
+        mp.unobserve_property(refresh)
+    end
+end
+
+mp.register_script_message("closed", function()
+    is_open = false
+    watch(false)
+end)
+
+mp.add_key_binding(nil, "open", function()
+    is_open = true
+    watch(true)
+    mp.commandv("script-message-to", "uosc", "open-menu", utils.format_json(build()))
+end)
