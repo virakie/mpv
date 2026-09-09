@@ -84,6 +84,12 @@ instead. `Esc` resumes.
 
 Definitions are saved, so looked-up words work offline after. Text subs only.
 
+There is a full offline dictionary too: 147k words from WordNet in
+`subdict-words.tsv`. The online dictionary is still tried first, since it has
+pronunciations and more modern wording, but if it is slow or you are on a
+plane the local copy answers instead. `subdict-morph.tsv` maps inflected forms
+onto their base, so "scurried" finds "scurry" with no network.
+
 ---
 
 ## Everything else

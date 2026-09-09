@@ -25,6 +25,10 @@ local o = {
     wrap_at = 62,
     -- seconds to wait on the network before giving up
     timeout = 8,
+    -- the offline dictionary, used when the API cannot be reached. Both live
+    -- next to mpv.conf. Set offline_file empty to turn the fallback off.
+    offline_file = "subdict-words.tsv",
+    morph_file = "subdict-morph.tsv",
 }
 options.read_options(o, "subdict")
 
@@ -203,6 +207,79 @@ local function shape(json)
     return out
 end
 
+--------------------------------------------------------------------------
+-- Offline dictionary
+--
+-- subdict-words.tsv is WordNet, one "word<TAB>sense | sense" line per word,
+-- sorted. That sorting is the whole trick: a lookup binary-searches the file
+-- with a handful of seeks, so 147k words cost nothing to keep around and
+-- nothing to load. subdict-morph.tsv is the same shape and maps inflected
+-- forms onto their base, which is how "scurried" finds "scurry" with no
+-- network involved.
+--------------------------------------------------------------------------
+
+local words_path = mp.command_native({"expand-path", "~~/" .. o.offline_file})
+local morph_path = mp.command_native({"expand-path", "~~/" .. o.morph_file})
+
+-- The value for `key`, or nil. Both files share this format.
+local function search_file(path, key)
+    local file = io.open(path, "rb")
+    if not file then return nil end
+
+    local size = file:seek("end")
+    local lo, hi = 0, size
+    while lo < hi do
+        local mid = math.floor((lo + hi) / 2)
+        file:seek("set", mid)
+        if mid > 0 then file:read("*l") end     -- drop the partial line
+        local line = file:read("*l")
+        if not line then
+            hi = mid
+        else
+            local at = file:seek()
+            local found = line:match("^([^\t]*)")
+            if found < key then lo = at else hi = mid end
+        end
+    end
+
+    -- lo now sits at or just before the first line that could match
+    file:seek("set", lo)
+    for _ = 1, 3 do
+        local line = file:read("*l")
+        if not line then break end
+        local found, rest = line:match("^([^\t]*)\t(.*)$")
+        if found == key then
+            file:close()
+            return rest
+        elseif found and found > key then
+            break
+        end
+    end
+    file:close()
+    return nil
+end
+
+-- Returns the same shape the API path produces, minus phonetics: WordNet has
+-- no pronunciations, so that line simply does not appear offline.
+local function offline_lookup(word)
+    local line = search_file(words_path, word)
+    if not line then
+        local base = search_file(morph_path, word)
+        if base then line = search_file(words_path, base) end
+    end
+    if not line then return nil end
+
+    local senses = {}
+    for sense in line:gmatch("([^|]+)") do
+        sense = sense:match("^%s*(.-)%s*$")
+        if sense ~= "" and #senses < o.max_definitions then
+            senses[#senses + 1] = sense
+        end
+    end
+    if #senses == 0 then return nil end
+    return { senses = senses }
+end
+
 local lookup
 
 -- Plain dictionaries do not hold inflected forms, so on a miss try the
@@ -250,17 +327,27 @@ lookup = function(word, fallbacks)
             draw_panel()
             return
         end
-        -- try a stem, then admit defeat
+        -- try a stem, then the offline copy, then admit defeat
         local next_try = fallbacks and table.remove(fallbacks, 1)
         if next_try then
             lookup(next_try, fallbacks)
-        else
-            entry = nil
-            status = (ok and res and res.status == 0)
-                     and "no definition found"
-                     or  "lookup failed - is the network up?"
-            draw_panel()
+            return
         end
+
+        local offline = offline_lookup(word)
+        if offline then
+            -- Not cached: the API is the better answer and should get another
+            -- go at this word once the network is back.
+            entry, status = offline, nil
+            draw_panel()
+            return
+        end
+
+        entry = nil
+        status = (ok and res and res.status == 0)
+                 and "no definition found"
+                 or  "offline, and not in the local dictionary"
+        draw_panel()
     end)
 end
 
@@ -435,3 +522,11 @@ end
 
 mp.register_event("start-file", close)
 mp.add_key_binding(nil, "lookup", lookup_line)
+
+-- Ask the offline dictionary directly, without the API or the panel:
+--   script-message subdict-offline ephemeral
+mp.register_script_message("subdict-offline", function(word)
+    local hit = offline_lookup((word or ""):lower())
+    msg.info("offline(" .. tostring(word) .. ") -> " ..
+             (hit and table.concat(hit.senses, " | ") or "nothing"))
+end)
