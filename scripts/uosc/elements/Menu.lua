@@ -681,7 +681,12 @@ function Menu:schedule_hover(key, delay, action)
 	-- Only act once the pointer settles: a cursor still travelling is on its way
 	-- somewhere else, and opening under it is what makes hover navigation feel
 	-- like it fires at random.
-	local settle_distance = 8 * state.scale
+	--
+	-- Local change: upstream waits 0.2s and calls anything over 8px "still
+	-- moving", which meant a slowly crossing cursor kept postponing the open
+	-- and submenus felt unresponsive. 0.05s and a wider tolerance keeps the
+	-- protection against a fast sweep without the wait being noticeable.
+	local settle_distance = 24 * state.scale
 	local x, y = cursor.x, cursor.y
 	local function fire()
 		if not (self:is_alive() and self.mouse_nav and self.hover_key == key) then return end
@@ -1488,7 +1493,7 @@ function Menu:render()
 			if self.mouse_nav and get_point_to_rectangle_proximity(cursor, bg_rect) <= 0 then
 				local hovered = math.floor((cursor.y - content_rect.ay + menu.scroll_y) / self.scroll_step) + 1
 				if hovered ~= menu.selected_index then
-					self:schedule_hover('back:' .. tostring(menu.id), 0.1, function()
+					self:schedule_hover('back:' .. tostring(menu.id), 0.05, function()
 						self:slide_in_menu(menu.id, x)
 					end)
 				else
@@ -1552,7 +1557,7 @@ function Menu:render()
 					end
 					-- Local patch: rest on a submenu item to enter it
 					if item.items then
-						self:schedule_hover('open:' .. tostring(menu.id) .. ':' .. index, 0.2, function()
+						self:schedule_hover('open:' .. tostring(menu.id) .. ':' .. index, 0.05, function()
 							if self.current == menu and menu.selected_index == index then
 								self:activate_selected_item({id = 'right', key = 'right'}, true)
 							end

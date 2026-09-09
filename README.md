@@ -90,7 +90,8 @@ Definitions are saved, so looked-up words work offline after. Text subs only.
 
 | Key | Does |
 | --- | --- |
-| `Right-click` | main menu, opens where the pointer is |
+| `Right-click` | play / pause |
+| `Middle-click` | main menu, opens where the pointer is |
 | `Menu` | main menu, centred |
 | `Tab` | audio + subtitle track picker |
 | `Alt` + `c` | chapters: jump, add, rename, delete |
@@ -165,6 +166,11 @@ theme and the cascade-menu patch.
 
 The interface itself is [uosc](https://github.com/tomasklaen/uosc) 5.13.0, with
 that patch applied so submenus cascade to the right of the pointer.
+
+Two local edits live in `scripts/uosc/elements/Menu.lua` and will be lost if
+uosc is updated: the submenu hover delay is 0.05s rather than 0.2s, and the
+"cursor has settled" tolerance is 24px rather than 8px. Upstream's values made
+submenus feel unresponsive to a slowly moving pointer.
 
 The menu is built from the `#!` comments at the bottom of `input.conf`. Those
 lines start with `#` so they bind nothing - they exist only to place an entry.
