@@ -218,6 +218,36 @@ end
 -- network involved.
 --------------------------------------------------------------------------
 
+-- A breadcrumb saying "this script switched subtitles off and has not put
+-- them back yet". Written before hiding them and cleared after restoring, so
+-- a crash or a kill mid-lookup leaves evidence the next launch can act on.
+local flag_path = mp.command_native({"expand-path", "~~/subdict-hid-subs"})
+
+local function hid_subs(state)
+    if state then
+        local f = io.open(flag_path, "w")
+        if f then f:write("1") f:close() end
+    else
+        os.remove(flag_path)
+    end
+end
+
+-- Repair on startup. Only ever turns subtitles back ON, so it cannot fight a
+-- deliberate choice made anywhere else.
+local function repair_subs()
+    local f = io.open(flag_path, "r")
+    if not f then return end
+    f:close()
+    os.remove(flag_path)
+    if mp.get_property_bool("sub-visibility") == false then
+        mp.set_property_bool("sub-visibility", true)
+        msg.warn("subtitles were left hidden by an interrupted lookup; turned back on")
+        mp.commandv("script-message-to", "osd_theme", "say", "Subtitles", "on",
+                    "an interrupted lookup had left them hidden")
+    end
+end
+mp.register_event("file-loaded", repair_subs)
+
 local words_path = mp.command_native({"expand-path", "~~/" .. o.offline_file})
 local morph_path = mp.command_native({"expand-path", "~~/" .. o.morph_file})
 
@@ -478,6 +508,7 @@ close = function()
     if saved.sub_visibility ~= nil then
         mp.set_property_bool("sub-visibility", saved.sub_visibility)
     end
+    hid_subs(false)
     if saved.pause ~= nil then
         mp.set_property_bool("pause", saved.pause)
     end
@@ -503,7 +534,11 @@ local function lookup_line()
     saved.sub_visibility = mp.get_property_bool("sub-visibility")
     saved.window_dragging = mp.get_property_bool("window-dragging")
     mp.set_property_bool("pause", true)
-    -- our copy of the line replaces the real one, so it is not drawn twice
+    -- our copy of the line replaces the real one, so it is not drawn twice.
+    -- Noted on disk as well: if mpv is killed with the panel open, nothing in
+    -- here gets to run, and a config where `v` is ignored has no other way of
+    -- turning subtitles back on. The next launch reads this and repairs it.
+    hid_subs(true)
     mp.set_property_bool("sub-visibility", false)
     -- clicking a word must not drag the window, same as the seek bar
     mp.set_property_bool("window-dragging", false)
