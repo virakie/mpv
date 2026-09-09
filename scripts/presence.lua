@@ -24,6 +24,8 @@ local o = {
     show_timestamps = true,
     show_episode = true,
     show_episode_title = true,
+    -- name the director on films. Needs a TMDB key; TVmaze has no films.
+    show_director = true,
     -- ask which title you meant when the match looks weak
     ask_when_unsure = true,
     -- a search hit below this scores as unsure (0-1)
@@ -56,7 +58,7 @@ local cache_path = mp.command_native({"expand-path", "~~/presence-cache.json"})
 -- an older number are looked up again rather than served stale, which is how
 -- shows remembered before posters existed pick one up without you having to
 -- know the cache file is there.
-local CACHE_VERSION = 2
+local CACHE_VERSION = 3
 
 local enabled = false
 local current = nil        -- the activity we last published
@@ -272,6 +274,19 @@ function tmdb.search(title, kind, done)
     end)
 end
 
+function tmdb.director(id, done)
+    curl(string.format("https://api.themoviedb.org/3/movie/%s/credits?api_key=%s",
+                       tostring(id), o.tmdb_key),
+         function(json)
+        local names = {}
+        for _, person in ipairs((json or {}).crew or {}) do
+            if person.job == "Director" then names[#names + 1] = person.name end
+        end
+        -- a couple of films have two; more than that is a crowd, so stop there
+        done(#names > 0 and table.concat(names, ", ", 1, math.min(#names, 2)) or nil)
+    end)
+end
+
 function tmdb.episode(id, season, number, done)
     curl(string.format(
             "https://api.themoviedb.org/3/tv/%s/season/%d/episode/%d?api_key=%s",
@@ -345,7 +360,7 @@ local function build(info, match, episode_title)
     local bits = {}
     if info.kind == "tv" and o.show_episode and info.episode then
         if info.season then
-            bits[#bits + 1] = string.format("S%02dE%02d", info.season, info.episode)
+            bits[#bits + 1] = string.format("S%d:E%d", info.season, info.episode)
         else
             bits[#bits + 1] = "Episode " .. info.episode
         end
@@ -353,8 +368,15 @@ local function build(info, match, episode_title)
     if o.show_episode_title and episode_title then
         bits[#bits + 1] = episode_title
     end
-    if info.kind == "movie" and match and match.year then
-        bits[#bits + 1] = tostring(match.year)
+    if info.kind == "movie" and match then
+        if match.year then
+            bits[#bits + 1] = "(" .. match.year .. ")"
+        end
+        -- `false` means we asked and the provider had nobody, so we do not ask
+        -- again; nil means we have not looked yet.
+        if o.show_director and match.director then
+            bits[#bits + 1] = match.director
+        end
     end
     activity.details = table.concat(bits, "  -  ")
     if o.show_timestamps then
@@ -370,6 +392,15 @@ local function finish(info, match)
     if info.kind == "tv" and info.episode and o.show_episode_title and match then
         provider().episode(match.id, info.season, info.episode, function(title)
             publish(build(info, match, title))
+        end)
+    elseif info.kind == "movie" and match and o.show_director
+           and match.director == nil and provider().director then
+        provider().director(match.id, function(name)
+            -- Stored on the match, which is the same table the cache holds,
+            -- so one lookup covers every later play of this film.
+            match.director = name or false
+            save_cache()
+            publish(build(info, match, nil))
         end)
     else
         publish(build(info, match, nil))
