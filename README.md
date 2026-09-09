@@ -90,7 +90,12 @@ Definitions are saved, so looked-up words work offline after. Text subs only.
 
 | Key | Does |
 | --- | --- |
-| `Tab` | audio + subtitle track picker |
+| `Right-click` | main menu, opens where the pointer is |
+| `Menu` | main menu, centred |
+| `Tab` | which rule auto-picked the subtitle track |
+| `Alt` + `t` / `y` | pick the subtitle / audio track |
+| `Alt` + `c` | chapters: jump, add, rename, delete |
+| `Ctrl` + `Tab` | show or hide the whole interface |
 | `←` `→` | seek 2s |
 | `↑` `↓` | volume |
 | `=` / `-` | speed |
@@ -115,7 +120,7 @@ Drag the seek bar to skim. Drag anywhere else to move the window.
 
 - Every video loops. Delete `loop=yes` from `mpv.conf` to stop it.
 - `w` `o` `p` `j` `l` `v` `a` do nothing on purpose. See bottom of `input.conf`.
-- No default seek bar. `minimal.lua` draws a thin one.
+- The seek bar and menus are uosc. `minimal.lua` is retired in `scripts/.unused`.
 - English audio auto-picked when there are several tracks.
 - Window opens at half your screen size.
 
@@ -134,7 +139,8 @@ Drag the seek bar to skim. Drag anywhere else to move the window.
 | `scripts/sub-seek.lua` | the `F4` subtitle line list |
 | `scripts/osd-theme.lua` | one look for on-screen messages |
 | `scripts/track-menu.lua` | `Tab` picker |
-| `scripts/minimal.lua` | seek bar |
+| `scripts/uosc/` | seek bar, menus, the whole interface |
+| `scripts/uosc-menu.lua` | builds the menu from `#!` comments in `input.conf` |
 | `scripts/thumbfast.lua` | seek bar thumbnails |
 | `scripts/autoload.lua` | queues the rest of the folder |
 | `scripts/gifgen.lua`, `webm.lua` | clip exporting |
@@ -150,8 +156,14 @@ Presets saved with `w` go to `substyle-custom.conf`.
 
 Several scripts come from [v-amorim/moonlight-mpv](https://github.com/v-amorim/moonlight-mpv):
 `keybind-visualizer`, `sub-seek`, `osd-theme`, `pause-indicator`, `restart-mpv`,
-`reset-all` and `skip-chapters`, plus its Material Icons font. Its uosc theme is
-not used here - the seek bar stays `minimal.lua`.
+`reset-all`, `skip-chapters`, and the three menu scripts, along with its uosc
+theme and the cascade-menu patch.
+
+The interface itself is [uosc](https://github.com/tomasklaen/uosc) 5.13.0, with
+that patch applied so submenus cascade to the right of the pointer.
+
+The menu is built from the `#!` comments at the bottom of `input.conf`. Those
+lines start with `#` so they bind nothing - they exist only to place an entry.
 
 The `F6` map reads the `#` comment at the end of each `input.conf` line, so
 describing a binding there is what makes it readable on the map.
