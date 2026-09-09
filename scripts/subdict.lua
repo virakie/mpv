@@ -387,13 +387,13 @@ local function lookup_line()
 
     local text = mp.get_property("sub-text")
     if not text or text:gsub("%s", "") == "" then
-        mp.osd_message("subdict: no subtitle line on screen", 2)
+        mp.commandv("script-message-to", "osd_theme", "say", "Dictionary", "", "no subtitle line on screen")
         return
     end
 
     tokenize((text:gsub("\n", " ")))
     if #words == 0 then
-        mp.osd_message("subdict: nothing to look up", 2)
+        mp.commandv("script-message-to", "osd_theme", "say", "Dictionary", "", "nothing to look up")
         return
     end
 

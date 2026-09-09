@@ -332,7 +332,8 @@ local function publish(activity)
         lines[#lines + 1] = activity.details
     end
     msg.info("presence: " .. utils.format_json(activity))
-    mp.osd_message("Presence: " .. table.concat(lines, "  -  "), 3)
+    mp.commandv("script-message-to", "osd_theme", "say", "Presence",
+                activity.name, activity.details or "")
 end
 
 local function build(info, match, episode_title)
@@ -488,12 +489,12 @@ local function set_enabled(state)
     -- and the plugin's own toggle stays out of the way.
     mp.set_property("user-data/presence/active", enabled and "yes" or "no")
     if enabled then
-        mp.osd_message("Presence: on", 1.5)
+        mp.commandv("script-message-to", "osd_theme", "say", "Presence", "on", "")
         identify(false)
     else
         close_picker(false)
         publish(nil)
-        mp.osd_message("Presence: off", 1.5)
+        mp.commandv("script-message-to", "osd_theme", "say", "Presence", "off", "")
     end
 end
 

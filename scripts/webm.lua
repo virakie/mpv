@@ -1474,7 +1474,11 @@ do
       local margin = options.margin * scale
       ass:append("{\\an7}")
       ass:pos(margin, margin)
-      return ass:append("{\\fs" .. tostring(options.font_size * scale) .. "}")
+      -- Same face, outline and colour as osd-theme, so this menu reads as
+      -- part of the interface rather than mpv's default look.
+      return ass:append("{\\fs" .. tostring(options.font_size * scale)
+        .. "\\fn" .. (mp.get_property("osd-font") or "sans-serif")
+        .. "\\bord2\\shad1\\3c&H36231E&\\4c&H36231E&\\1c&HFFD9CE&}")
     end
   }
   _base_0.__index = _base_0

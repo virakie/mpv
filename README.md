@@ -102,8 +102,10 @@ Definitions are saved, so looked-up words work offline after. Text subs only.
 | `c` | crop |
 | `e` / `E` | GIF start / end, then `Ctrl` + `e` to make |
 | `W` | webm encoder |
-| `Ctrl` + `c` / `v` | copy / paste path or URL |
-| `s` | screenshot |
+| `Ctrl` + `Shift` + `C` / `Ctrl` + `v` | copy / paste path or URL |
+| `s` | screenshot to file |
+| `Ctrl` + `c` | copy the frame to the clipboard, subtitles included |
+| `Ctrl` + `Shift` + `c` | copy the frame without subtitles |
 | `F6` | on-screen keyboard of every keybind, searchable |
 | `F4` | list every subtitle line, filter and jump to one |
 | `Ctrl` + `←` `→` `↓` | previous / next / replay subtitle line |
@@ -119,7 +121,8 @@ Drag the seek bar to skim. Drag anywhere else to move the window.
 
 - Every video loops. Delete `loop=yes` from `mpv.conf` to stop it.
 - `w` `o` `p` `j` `l` `v` `a` do nothing on purpose. See bottom of `input.conf`.
-- The seek bar and menus are uosc. It stays hidden until you move the mouse.
+- The seek bar and menus are uosc. It stays hidden until you move the mouse,
+  and the control buttons are off - the right-click menu does that job.
 - `minimal.lua`, `track-menu.lua` and the sub-select pair sit in `scripts/.unused`.
 - English audio auto-picked when there are several tracks.
 - Window opens at half your screen size.

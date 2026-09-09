@@ -75,8 +75,12 @@ local function draw(body, duration)
     end
 end
 
-local function show(text, duration)
-    draw("{\\1c&HFFFFFF&}" .. ass_escape(text), duration or o.osd_duration)
+-- One-line notices go through osd-theme, so every script in this config says
+-- things the same way. The adjust panel keeps its own overlay: that is a panel
+-- you steer, not a message that flashes past.
+local function notice(label, state, detail)
+    mp.commandv("script-message-to", "osd_theme", "say",
+                label, state or "", detail or "")
 end
 
 local function hide()
@@ -213,15 +217,14 @@ local function apply(kind, announce)
         resync_font()
     end
     if announce then
-        show(set.label .. ": " .. pretty(name))
+        notice(set.label, pretty(name))
     end
 end
 
 local function cycle(kind, step)
     local set = sets[kind]
     if #set.list == 0 then
-        show("substyle: nothing listed for '" .. kind ..
-             "' in script-opts/substyle.conf")
+        notice("Sub " .. kind, "", "nothing listed in script-opts/substyle.conf")
         return
     end
     if set.adrift then
@@ -243,9 +246,8 @@ mp.add_key_binding(nil, "prev-style", function() cycle("style", -1) end)
 mp.add_key_binding(nil, "show", function()
     -- Report the font mpv is actually using, not the last one we picked:
     -- a style preset or an adjustment may have replaced it.
-    show(sets.font.label  .. ": " .. (mp.get_property("sub-font") or "-") .. "\n" ..
-         sets.style.label .. ": " .. pretty(sets.style.list[sets.style.index] or "-"),
-         o.osd_duration + 1)
+    notice("Subtitles", mp.get_property("sub-font") or "-",
+           pretty(sets.style.list[sets.style.index] or "-"))
 end)
 
 -- Jump straight to a preset and keep the cycle position in sync, e.g.
