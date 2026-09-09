@@ -92,8 +92,7 @@ Definitions are saved, so looked-up words work offline after. Text subs only.
 | --- | --- |
 | `Right-click` | main menu, opens where the pointer is |
 | `Menu` | main menu, centred |
-| `Tab` | which rule auto-picked the subtitle track |
-| `Alt` + `t` / `y` | pick the subtitle / audio track |
+| `Tab` | audio + subtitle track picker |
 | `Alt` + `c` | chapters: jump, add, rename, delete |
 | `Ctrl` + `Tab` | show or hide the whole interface |
 | `←` `→` | seek 2s |
@@ -120,7 +119,8 @@ Drag the seek bar to skim. Drag anywhere else to move the window.
 
 - Every video loops. Delete `loop=yes` from `mpv.conf` to stop it.
 - `w` `o` `p` `j` `l` `v` `a` do nothing on purpose. See bottom of `input.conf`.
-- The seek bar and menus are uosc. `minimal.lua` is retired in `scripts/.unused`.
+- The seek bar and menus are uosc. It stays hidden until you move the mouse.
+- `minimal.lua`, `track-menu.lua` and the sub-select pair sit in `scripts/.unused`.
 - English audio auto-picked when there are several tracks.
 - Window opens at half your screen size.
 
@@ -141,6 +141,7 @@ Drag the seek bar to skim. Drag anywhere else to move the window.
 | `scripts/track-menu.lua` | `Tab` picker |
 | `scripts/uosc/` | seek bar, menus, the whole interface |
 | `scripts/uosc-menu.lua` | builds the menu from `#!` comments in `input.conf` |
+| `scripts/track-picker.lua` | the `Tab` track chooser, drawn by uosc |
 | `scripts/thumbfast.lua` | seek bar thumbnails |
 | `scripts/autoload.lua` | queues the rest of the folder |
 | `scripts/gifgen.lua`, `webm.lua` | clip exporting |
