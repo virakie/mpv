@@ -100,6 +100,12 @@ Definitions are saved, so looked-up words work offline after. Text subs only.
 | `W` | webm encoder |
 | `Ctrl` + `c` / `v` | copy / paste path or URL |
 | `s` | screenshot |
+| `F6` | on-screen keyboard of every keybind, searchable |
+| `F4` | list every subtitle line, filter and jump to one |
+| `Ctrl` + `←` `→` `↓` | previous / next / replay subtitle line |
+| `F5` | reload this file at the same spot, applying config edits |
+| `F11` | auto-skip opening and ending chapters on/off |
+| `Alt` + `F5` | reset zoom, speed, delays and colours |
 
 Drag the seek bar to skim. Drag anywhere else to move the window.
 
@@ -124,6 +130,9 @@ Drag the seek bar to skim. Drag anywhere else to move the window.
 | `scripts/substyle.lua` | style switching + adjust panel |
 | `scripts/subdict.lua` | dictionary |
 | `scripts/presence.lua` | works out what you are watching, for Discord |
+| `scripts/keybind-visualizer.lua` | the `F6` keyboard map |
+| `scripts/sub-seek.lua` | the `F4` subtitle line list |
+| `scripts/osd-theme.lua` | one look for on-screen messages |
 | `scripts/track-menu.lua` | `Tab` picker |
 | `scripts/minimal.lua` | seek bar |
 | `scripts/thumbfast.lua` | seek bar thumbnails |
@@ -138,6 +147,14 @@ Trebuchet and Verdana come with Windows. Netflix Sans you need yourself.
 Presets saved with `w` go to `substyle-custom.conf`.
 
 ## Credits
+
+Several scripts come from [v-amorim/moonlight-mpv](https://github.com/v-amorim/moonlight-mpv):
+`keybind-visualizer`, `sub-seek`, `osd-theme`, `pause-indicator`, `restart-mpv`,
+`reset-all` and `skip-chapters`, plus its Material Icons font. Its uosc theme is
+not used here - the seek bar stays `minimal.lua`.
+
+The `F6` map reads the `#` comment at the end of each `input.conf` line, so
+describing a binding there is what makes it readable on the map.
 
 `scripts/rich-presence.dll` is built from
 [goodtrailer/mpv-rich-presence](https://github.com/goodtrailer/mpv-rich-presence),
