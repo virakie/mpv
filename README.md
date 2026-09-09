@@ -100,7 +100,7 @@ onto their base, so "scurried" finds "scurry" with no network.
 | `Right-click` | play / pause |
 | `Middle-click` | main menu, opens where the pointer is |
 | `Menu` | main menu, centred |
-| `Tab` | audio + subtitle track picker |
+| `Tab` | audio + subtitle track picker (Tab again closes it) |
 | `Alt` + `c` | chapters: jump, add, rename, delete |
 | `Ctrl` + `Tab` | show or hide the whole interface |
 | `←` `→` | seek 2s |
@@ -114,10 +114,10 @@ onto their base, so "scurried" finds "scurry" with no network.
 | `s` | screenshot to file |
 | `Ctrl` + `c` | copy the frame to the clipboard, subtitles included |
 | `Ctrl` + `Shift` + `c` | copy the frame without subtitles |
-| `F6` | on-screen keyboard of every keybind, searchable |
+| `Ctrl` + `Alt` + `k` | on-screen keyboard of every keybind, searchable |
 | `F4` | list every subtitle line, filter and jump to one |
 | `Ctrl` + `←` `→` `↓` | previous / next / replay subtitle line |
-| `F5` | reload this file at the same spot, applying config edits |
+| `Ctrl` + `r` | refresh: reload this file at the same spot |
 | `F11` | auto-skip opening and ending chapters on/off |
 | `Alt` + `F5` | reset zoom, speed, delays and colours |
 
@@ -182,7 +182,7 @@ submenus feel unresponsive to a slowly moving pointer.
 The menu is built from the `#!` comments at the bottom of `input.conf`. Those
 lines start with `#` so they bind nothing - they exist only to place an entry.
 
-The `F6` map reads the `#` comment at the end of each `input.conf` line, so
+The keyboard map reads the `#` comment at the end of each `input.conf` line, so
 describing a binding there is what makes it readable on the map.
 
 `scripts/rich-presence.dll` is built from

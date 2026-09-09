@@ -28,4 +28,5 @@ function restart_mpv()
 	utils.subprocess_detached(args)
 end
 
-mp.add_key_binding("F5", "restart-mpv", restart_mpv)
+-- No default key: input.conf puts this on Ctrl+R.
+mp.add_key_binding(nil, "restart-mpv", restart_mpv)

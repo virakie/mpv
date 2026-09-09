@@ -96,13 +96,39 @@ local function watch(on)
     end
 end
 
+-- While a menu is up, uosc claims the keyboard, so the Tab from input.conf
+-- never arrives: uosc binds its own menu-tab. mpv settles that by section
+-- age, newest wins, and uosc enables its section when it processes our
+-- open-menu message - after us. So this has to be registered a moment later
+-- to end up on top, and it is removed again the moment the menu closes.
+local function grab_tab(on)
+    if on then
+        mp.add_forced_key_binding("TAB", "track-picker-close", function()
+            mp.commandv("script-message-to", "uosc", "close-menu", "track-picker")
+        end)
+    else
+        mp.remove_key_binding("track-picker-close")
+    end
+end
+
 mp.register_script_message("closed", function()
     is_open = false
     watch(false)
+    grab_tab(false)
 end)
 
+-- Toggle rather than open: the same key that brought it up puts it away,
+-- without having to reach for Esc.
 mp.add_key_binding(nil, "open", function()
+    if is_open then
+        mp.commandv("script-message-to", "uosc", "close-menu", "track-picker")
+        -- uosc answers with on_close, which clears is_open and the watchers
+        return
+    end
     is_open = true
     watch(true)
     mp.commandv("script-message-to", "uosc", "open-menu", utils.format_json(build()))
+    mp.add_timeout(0.15, function()
+        if is_open then grab_tab(true) end
+    end)
 end)
