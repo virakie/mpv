@@ -67,8 +67,9 @@ Saved presets show up in the `Alt` + `↑` `↓` list next launch.
 
 ### Discord presence — `Alt` + `p`
 
-Toggle it on and Discord shows "Watching <show name>" instead of mpv. Series
-read `S2:E13` with the episode title; films read `(1996)` and the director. It reads
+Toggle it on and Discord shows "Watching House (2004)" instead of mpv. Series
+put `S2:E13 - Episode Title` in bold; films put the director there. Under that,
+Playing or Paused. It reads
 the filename, asks TVmaze what the show is, and asks you only when unsure.
 `Alt` + `o` re-picks if it guessed wrong. Your answer is remembered
 per folder, so a season only asks once.

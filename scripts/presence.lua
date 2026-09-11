@@ -353,6 +353,11 @@ end
 
 local function build(info, match, episode_title)
     local activity = { type = "watching", name = match and match.name or info.title }
+    -- The year rides on the title, so the header reads "Watching House (2004)"
+    -- for series and films alike.
+    if match and match.year then
+        activity.name = activity.name .. " (" .. match.year .. ")"
+    end
     if match and match.image then
         activity.image = match.image
         activity.image_text = match.name
@@ -369,9 +374,6 @@ local function build(info, match, episode_title)
         bits[#bits + 1] = episode_title
     end
     if info.kind == "movie" and match then
-        if match.year then
-            bits[#bits + 1] = "(" .. match.year .. ")"
-        end
         -- `false` means we asked and the provider had nobody, so we do not ask
         -- again; nil means we have not looked yet.
         if o.show_director and match.director then
