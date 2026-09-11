@@ -67,9 +67,12 @@ Saved presets show up in the `Alt` + `↑` `↓` list next launch.
 
 ### Discord presence — `Alt` + `p`
 
-Toggle it on and Discord shows "Watching House" instead of mpv, the title in
-bold, then `(2004) - S7:E2 - Selfish` for a series or `(1996) - Danny Boyle`
-for a film. The progress bar means playing; "Paused" is appended when not. It reads
+Toggle it on and Discord shows "Watching a Series" or "Watching a Film", the
+title in bold, then `(2004) - S7:E2` or `(1996) - Danny Boyle`, then the
+progress bar. Every line is a template in `script-opts/presence.conf` -
+placeholders like `{title}` `{year}` `{season}` `{episode}` `{episode_title}`
+`{director}` - so what shows is yours to rearrange. Episode titles are off by
+default because they are spoilers; `show_episode_title=yes` turns them on. It reads
 the filename, asks TVmaze what the show is, and asks you only when unsure.
 `Alt` + `o` re-picks if it guessed wrong. Your answer is remembered
 per folder, so a season only asks once.

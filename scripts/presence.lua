@@ -20,12 +20,26 @@ local o = {
     enabled = false,
     -- TMDB api key. Empty falls back to TVmaze: no signup, but no films.
     tmdb_key = "",
-    -- what to publish
+    -- what to publish. The switches blank a placeholder; the templates
+    -- below decide where each one goes.
     show_timestamps = true,
+    show_year = true,
     show_episode = true,
-    show_episode_title = true,
+    show_episode_title = false,   -- off: episode titles are spoilers
     -- name the director on films. Needs a TMDB key; TVmaze has no films.
     show_director = true,
+    -- The card: "Watching <header>", then <bold>, then <sub>, then the
+    -- progress bar. Placeholders: {title} {year} {season} {episode}
+    -- {episode_title} {director}. Pieces are separated by " - " and a piece
+    -- whose placeholders are all empty is dropped.
+    header_series = "a Series",
+    header_film = "a Film",
+    bold_series = "{title}",
+    bold_film = "{title}",
+    sub_series = "({year}) - S{season}:E{episode} - {episode_title}",
+    sub_film = "({year}) - {director}",
+    -- appended to the sub line while paused; empty to show nothing
+    paused_suffix = " - Paused",
     -- ask which title you meant when the match looks weak
     ask_when_unsure = true,
     -- a search hit below this scores as unsure (0-1)
@@ -351,37 +365,55 @@ local function publish(activity)
                 activity.name, activity.details or "")
 end
 
-local function build(info, match, episode_title)
-    local activity = { type = "watching", name = match and match.name or info.title }
+-- Fill a template like "({year}) - S{season}:E{episode} - {episode_title}".
+-- It is split on " - ", each piece has its {placeholders} filled, and a piece
+-- whose placeholders all came up empty is dropped. That is what stops a film
+-- with no known director from reading "(1996) - ", or an episode with the
+-- title switched off from ending in a dangling dash.
+local function fill(template, vars)
+    local parts = {}
+    for piece in (template .. " - "):gmatch("(.-) %- ") do
+        local had, got = false, false
+        local out = piece:gsub("{([%w_]+)}", function(key)
+            had = true
+            local value = vars[key]
+            if value ~= nil and value ~= "" and value ~= false then
+                got = true
+                return tostring(value)
+            end
+            return ""
+        end)
+        if (not had or got) and out:match("%S") then
+            parts[#parts + 1] = out
+        end
+    end
+    return table.concat(parts, " - ")
+end
 
+local function build(info, match, episode_title)
+    local is_film = (info.kind == "movie")
+    local vars = {
+        title = match and match.name or info.title,
+        year = match and match.year or info.year,
+        season = info.season,
+        episode = info.episode,
+        episode_title = o.show_episode_title and episode_title or nil,
+        director = o.show_director and match and match.director or nil,
+    }
+    if not o.show_year then vars.year = nil end
+    if not o.show_episode then vars.season, vars.episode = nil, nil end
+
+    local activity = {
+        type = "watching",
+        header = fill(is_film and o.header_film or o.header_series, vars),
+        name = fill(is_film and o.bold_film or o.bold_series, vars),
+        details = fill(is_film and o.sub_film or o.sub_series, vars),
+        paused = o.paused_suffix,
+    }
     if match and match.image then
         activity.image = match.image
         activity.image_text = match.name
     end
-    local bits = {}
-    -- Year leads the bold line for series and films alike; on the title it
-    -- made the header run long.
-    if match and match.year then
-        bits[#bits + 1] = "(" .. match.year .. ")"
-    end
-    if info.kind == "tv" and o.show_episode and info.episode then
-        if info.season then
-            bits[#bits + 1] = string.format("S%d:E%d", info.season, info.episode)
-        else
-            bits[#bits + 1] = "Episode " .. info.episode
-        end
-    end
-    if o.show_episode_title and episode_title then
-        bits[#bits + 1] = episode_title
-    end
-    if info.kind == "movie" and match then
-        -- `false` means we asked and the provider had nobody, so we do not ask
-        -- again; nil means we have not looked yet.
-        if o.show_director and match.director then
-            bits[#bits + 1] = match.director
-        end
-    end
-    activity.details = table.concat(bits, "  -  ")
     if o.show_timestamps then
         local pos = mp.get_property_number("time-pos") or 0
         local dur = mp.get_property_number("duration")
