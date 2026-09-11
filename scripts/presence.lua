@@ -353,16 +353,17 @@ end
 
 local function build(info, match, episode_title)
     local activity = { type = "watching", name = match and match.name or info.title }
-    -- The year rides on the title, so the header reads "Watching House (2004)"
-    -- for series and films alike.
-    if match and match.year then
-        activity.name = activity.name .. " (" .. match.year .. ")"
-    end
+
     if match and match.image then
         activity.image = match.image
         activity.image_text = match.name
     end
     local bits = {}
+    -- Year leads the bold line for series and films alike; on the title it
+    -- made the header run long.
+    if match and match.year then
+        bits[#bits + 1] = "(" .. match.year .. ")"
+    end
     if info.kind == "tv" and o.show_episode and info.episode then
         if info.season then
             bits[#bits + 1] = string.format("S%d:E%d", info.season, info.episode)
