@@ -67,9 +67,9 @@ Saved presets show up in the `Alt` + `↑` `↓` list next launch.
 
 ### Discord presence — `Alt` + `p`
 
-Toggle it on and Discord shows "Watching House" instead of mpv. In bold under
-it: `(2004) - S7:E2 - Selfish` for a series, `(1996) - Danny Boyle` for a
-film. Under that, Playing or Paused. It reads
+Toggle it on and Discord shows "Watching House" instead of mpv, the title in
+bold, then `(2004) - S7:E2 - Selfish` for a series or `(1996) - Danny Boyle`
+for a film. The progress bar means playing; "Paused" is appended when not. It reads
 the filename, asks TVmaze what the show is, and asks you only when unsure.
 `Alt` + `o` re-picks if it guessed wrong. Your answer is remembered
 per folder, so a season only asks once.
