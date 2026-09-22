@@ -328,7 +328,19 @@ local function stems(word)
     return out
 end
 
+-- Bumped on every lookup, so an answer that arrives after you have moved on
+-- to another word can tell it is stale and keep quiet.
+local request_id = 0
+
+-- The offline dictionary answers first, instantly; the API is asked in the
+-- background and replaces that answer if it comes back with one. Waiting on
+-- the API first meant that whenever it was slow or down, the panel sat on
+-- "looking up" for the full timeout - once for the word and again for every
+-- stem - before the local copy was ever consulted.
 lookup = function(word, fallbacks)
+    request_id = request_id + 1
+    local my_id = request_id
+
     local hit = load_cache()[word]
     if hit then
         entry, status = hit, nil
@@ -336,49 +348,62 @@ lookup = function(word, fallbacks)
         return
     end
 
-    status = "looking up ..."
+    -- Offline: the word, its irregular base (inside offline_lookup), then
+    -- the regular stems.
+    local offline = offline_lookup(word)
+    if not offline then
+        for _, stem in ipairs(fallbacks or {}) do
+            offline = offline_lookup(stem)
+            if offline then break end
+        end
+    end
+    if offline then
+        entry, status = offline, nil
+    else
+        entry, status = nil, "looking up ..."
+    end
     draw_panel()
 
-    mp.command_native_async({
-        name = "subprocess", capture_stdout = true, playback_only = false,
-        -- -4 because the odd IPv6 attempt here stalls until the whole
-        -- timeout is spent, and one retry covers the API's occasional hiccup.
-        args = { "curl", "-s", "-4", "--connect-timeout", "4", "--retry", "1",
-                 "-m", tostring(o.timeout),
-                 "https://api.dictionaryapi.dev/api/v2/entries/en/" .. word },
-    }, function(ok, res)
-        if not open then return end
-        local parsed = ok and res and res.stdout and utils.parse_json(res.stdout)
-        local shaped = parsed and shape(parsed)
-        if shaped then
-            cache[word] = shaped
-            save_cache()
-            entry, status = shaped, nil
-            draw_panel()
-            return
-        end
-        -- try a stem, then the offline copy, then admit defeat
-        local next_try = fallbacks and table.remove(fallbacks, 1)
-        if next_try then
-            lookup(next_try, fallbacks)
-            return
-        end
+    local rest = {}
+    for i, stem in ipairs(fallbacks or {}) do rest[i] = stem end
 
-        local offline = offline_lookup(word)
-        if offline then
-            -- Not cached: the API is the better answer and should get another
-            -- go at this word once the network is back.
-            entry, status = offline, nil
-            draw_panel()
-            return
-        end
-
-        entry = nil
-        status = (ok and res and res.status == 0)
-                 and "no definition found"
-                 or  "offline, and not in the local dictionary"
-        draw_panel()
-    end)
+    local function ask(term)
+        mp.command_native_async({
+            name = "subprocess", capture_stdout = true, playback_only = false,
+            -- -4 because the odd IPv6 attempt here stalls until the whole
+            -- timeout is spent.
+            args = { "curl", "-s", "-4", "--connect-timeout", "4",
+                     "-m", tostring(o.timeout),
+                     "https://api.dictionaryapi.dev/api/v2/entries/en/" .. term },
+        }, function(ok, res)
+            if not open or my_id ~= request_id then return end
+            local parsed = ok and res and res.stdout and utils.parse_json(res.stdout)
+            local shaped = parsed and shape(parsed)
+            if shaped then
+                -- cached under the word you clicked, so it is instant next time
+                cache[word] = shaped
+                save_cache()
+                entry, status = shaped, nil
+                draw_panel()
+                return
+            end
+            -- The API answered but did not know the word, so a stem may do
+            -- better. If it did not answer at all, asking again only adds
+            -- another full wait.
+            local reached = ok and res and res.status == 0
+            local next_term = reached and table.remove(rest, 1)
+            if next_term then
+                ask(next_term)
+                return
+            end
+            if not entry then
+                status = reached and "no definition found"
+                                  or "offline, and not in the local dictionary"
+                draw_panel()
+            end
+        end)
+    end
+    ask(word)
 end
 
 local function lookup_selected()
