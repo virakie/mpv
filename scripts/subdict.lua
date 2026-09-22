@@ -25,6 +25,8 @@ local o = {
     wrap_at = 62,
     -- seconds to wait on the network before giving up
     timeout = 8,
+    -- show the IPA pronunciation next to the word (online answers only)
+    show_pronunciation = false,
     -- the offline dictionary, used when the API cannot be reached. Both live
     -- next to mpv.conf. Set offline_file empty to turn the fallback off.
     offline_file = "subdict-words.tsv",
@@ -144,7 +146,7 @@ local function draw_panel()
     local rows = {}
     local word = words[selected]
     local head = word and word.clean or "?"
-    if entry and entry.phonetic and entry.phonetic ~= "" then
+    if o.show_pronunciation and entry and entry.phonetic and entry.phonetic ~= "" then
         head = head .. "   " .. entry.phonetic
     end
     rows[#rows + 1] = "{\\b1\\1c" .. LABEL .. "}" .. ass_escape(head)
