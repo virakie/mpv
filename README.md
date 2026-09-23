@@ -49,7 +49,11 @@ Nine styles and seven fonts, flipped through separately. `Alt` + `↑` `↓` cha
 | ![Shortcut sheet](.github/screenshots/shortcuts.jpg) | ![Clip to WebM](.github/screenshots/webm.jpg) |
 | Built from your actual bindings. Type to filter. | Set a start and an end, crop, encode. |
 
-**Discord presence** (`Alt` + `p`, Windows only) shows what you're watching, with the poster, year and episode. It works out the show from the filename. `Alt` + `o` re-picks if it guesses wrong. Film posters need a free [TMDB key][tmdb] in a file called `presence-key.txt` next to `mpv.conf`.
+## Discord
+
+![Discord presence](.github/screenshots/discord.png)
+
+`Alt` + `p` (Windows only) shows what you're watching on your Discord profile, with the poster, year and episode. It works out the show from the filename. `Alt` + `o` re-picks if it guesses wrong. Film posters need a free [TMDB key][tmdb] in a file called `presence-key.txt` next to `mpv.conf`.
 
 ## Keys
 
