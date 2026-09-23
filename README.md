@@ -49,7 +49,7 @@ Nine styles and seven fonts, flipped through separately. `Alt` + `↑` `↓` cha
 | ![Shortcut sheet](.github/screenshots/shortcuts.jpg) | ![Clipper](.github/screenshots/clipper.jpg) |
 | Built from your actual bindings. Type to filter. | Mark a start and an end, crop, save as MP4, WebM or GIF. |
 
-## Discord
+## Discord Rich Presence toggle
 
 ![Discord presence](.github/screenshots/discord.png)
 
