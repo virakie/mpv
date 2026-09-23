@@ -6,7 +6,7 @@ Switchable subtitle styles, a subtitle dictionary, a thin [uosc][uosc] interface
 
 ## Install
 
-**[Download mpv-config.zip][download]** and unzip it into your mpv config folder. That's it. Older versions are on the [releases page][releases].
+**[Download mpv-config.zip][download]** and unzip it into your mpv config folder.
 
 | OS | Folder |
 | --- | --- |
