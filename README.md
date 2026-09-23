@@ -6,7 +6,7 @@ My mpv setup: switchable subtitle styles, a subtitle dictionary, a thin [uosc][u
 
 ## Install
 
-Unzip [the latest release][releases] into your mpv config folder. That's it.
+**[Download mpv-config.zip][download]** and unzip it into your mpv config folder. That's it. Older versions are on the [releases page][releases].
 
 | OS | Folder |
 | --- | --- |
@@ -74,7 +74,7 @@ Nine styles and seven fonts, flipped through separately. `Alt` + `↑` `↓` cha
 - Every video loops. Delete `loop=yes` from `mpv.conf` to stop it.
 - Settings for each script are in `script-opts/`.
 - Keys are in `input.conf`. The `# comment` after each one is what the `?` sheet shows.
-- Netflix Sans isn't included. The other fonts are in `fonts/`.
+- Netflix Sans isn't included: it's Netflix's own font and can't be shared. If you have it, drop the `.ttf` files into `fonts/`. Without it, the Netflix style falls back to a system font.
 - uosc carries a few small local edits. Updating uosc undoes them.
 
 ## Credits
@@ -84,6 +84,7 @@ Nine styles and seven fonts, flipped through separately. `Alt` + `↑` `↓` cha
 - [ento/mpv-cheatsheet][cheatsheet] (MIT): the idea behind the `?` sheet.
 - [goodtrailer/mpv-rich-presence][rich-presence] (AGPL-3.0): the Discord plugin, modified. Licence in `licenses/`.
 
+[download]: https://github.com/virakie/mpv/releases/latest/download/mpv-config.zip
 [releases]: https://github.com/virakie/mpv/releases
 [uosc]: https://github.com/tomasklaen/uosc
 [tmdb]: https://www.themoviedb.org/settings/api
