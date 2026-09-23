@@ -44,10 +44,10 @@ Nine styles and seven fonts, flipped through separately. `Alt` + `↑` `↓` cha
 
 ## Tools
 
-| Shortcuts: `?` | Clip to WebM: `W` |
+| Shortcuts: `?` | Clipper: `Shift` + `W` |
 | --- | --- |
-| ![Shortcut sheet](.github/screenshots/shortcuts.jpg) | ![Clip to WebM](.github/screenshots/webm.jpg) |
-| Built from your actual bindings. Type to filter. | Set a start and an end, crop, encode. |
+| ![Shortcut sheet](.github/screenshots/shortcuts.jpg) | ![Clipper](.github/screenshots/clipper.jpg) |
+| Built from your actual bindings. Type to filter. | Mark a start and an end, crop, save as MP4, WebM or GIF. |
 
 ## Discord
 
@@ -86,6 +86,7 @@ Nine styles and seven fonts, flipped through separately. `Alt` + `↑` `↓` cha
 - [uosc][uosc] 5.13.0 draws the interface.
 - [v-amorim/moonlight-mpv][moonlight]: the theme, menu scripts, subtitle list and several smaller scripts.
 - [ento/mpv-cheatsheet][cheatsheet] (MIT): the idea behind the `?` sheet.
+- [ekisu/mpv-webm][webm] (MIT): Clipper is this script, restyled and renamed.
 - [goodtrailer/mpv-rich-presence][rich-presence] (AGPL-3.0): the Discord plugin, modified. Licence in `licenses/`.
 
 [download]: https://github.com/virakie/mpv/releases/latest/download/mpv-config.zip
@@ -94,4 +95,5 @@ Nine styles and seven fonts, flipped through separately. `Alt` + `↑` `↓` cha
 [tmdb]: https://www.themoviedb.org/settings/api
 [moonlight]: https://github.com/v-amorim/moonlight-mpv
 [cheatsheet]: https://github.com/ento/mpv-cheatsheet
+[webm]: https://github.com/ekisu/mpv-webm
 [rich-presence]: https://github.com/goodtrailer/mpv-rich-presence

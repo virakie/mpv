@@ -1,10 +1,40 @@
+-- clipper.lua
+--
+-- Clipper: mark a start and an end, crop if you like, and save the clip as
+-- MP4, WebM, GIF or MP3. Opened with Shift+W.
+--
+-- Based on mpv-webm by ekisu (https://github.com/ekisu/mpv-webm), restyled to
+-- match the other panels in this config and renamed.
+--
+-- MIT License
+--
+-- Copyright (c) 2020 ekisu
+--
+-- Permission is hereby granted, free of charge, to any person obtaining a copy
+-- of this software and associated documentation files (the "Software"), to
+-- deal in the Software without restriction, including without limitation the
+-- rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+-- sell copies of the Software, and to permit persons to whom the Software is
+-- furnished to do so, subject to the following conditions:
+--
+-- The above copyright notice and this permission notice shall be included in
+-- all copies or substantial portions of the Software.
+--
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+-- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+-- IN THE SOFTWARE.
+
 local mp = require("mp")
 local assdraw = require("mp.assdraw")
 local msg = require("mp.msg")
 local utils = require("mp.utils")
 local mpopts = require("mp.options")
 local options = {
-	-- Defaults to shift+w
+	-- Shift+W. Also bound in input.conf, which is where to change it.
 	keybind = "W",
 	-- If empty, saves on the same directory of the playing video.
 	-- A starting "~" will be replaced by the home dir.
@@ -1423,6 +1453,32 @@ do
   GIF = _class_0
 end
 formats["gif"] = GIF()
+-- What the menus call each format: the file type first, then the codec for
+-- anyone who cares.
+local FORMAT_NAMES = {
+  ["avc"] = "MP4 (H.264)",
+  ["avc-nvenc"] = "MP4 (H.264, NVIDIA GPU)",
+  ["hevc"] = "MP4 (H.265)",
+  ["av1"] = "MP4 (AV1)",
+  ["webm-vp9"] = "WebM (VP9)",
+  ["webm-vp8"] = "WebM (VP8)",
+  ["gif"] = "GIF",
+  ["mp3"] = "MP3, audio only",
+  ["raw"] = "AVI, uncompressed"
+}
+for id, name in pairs(FORMAT_NAMES) do
+  if formats[id] then
+    formats[id].displayName = name
+  end
+end
+-- Sizes are kept in kB, like the original script; people read MB.
+local size_text
+size_text = function(kb)
+  if kb <= 0 then
+    return "no limit"
+  end
+  return (string.format("%.2f", kb / 1000):gsub("%.?0+$", "")) .. " MB"
+end
 local Page
 do
   local _class_0
@@ -1545,7 +1601,7 @@ do
       local ass = assdraw.ass_new()
       ass:new_event()
       self:setup_text(ass)
-      ass:append(panel_text("Encoding", {
+      ass:append(panel_text("Saving clip", {
         {
           "Progress",
           progressText
@@ -1918,7 +1974,7 @@ encode = function(region, startTime, endTime)
   local path, is_stream, is_temporary
   path, is_stream, is_temporary, startTime, endTime = find_path(startTime, endTime)
   if not path then
-    message("Clip to WebM", "no file is playing")
+    message("Clipper", "no video is playing")
     return 
   end
   local command = {
@@ -2048,14 +2104,14 @@ encode = function(region, startTime, endTime)
     append(first_pass_cmdline, {
       "--ovcopts-add=flags=+pass1"
     })
-    busy("Encoding", "first pass")
+    busy("Saving clip", "first of two passes")
     msg.verbose("First-pass command line: ", table.concat(first_pass_cmdline, " "))
     local res = run_subprocess({
       args = first_pass_cmdline,
       cancellable = false
     })
     if not res then
-      message("Encode failed", "the first pass stopped, see the log")
+      message("Couldn't save the clip", "the first pass stopped, see the log")
       emit_event("encode-finished", "fail")
       return 
     end
@@ -2071,14 +2127,14 @@ encode = function(region, startTime, endTime)
   msg.info("Encoding to", out_path)
   msg.verbose("Command line:", table.concat(command, " "))
   if options.run_detached then
-    message("Encoding", "in the background")
+    message("Saving clip", "in the background")
     return utils.subprocess_detached({
       args = command
     })
   else
     local res = false
     if not should_display_progress() then
-      busy("Encoding", out_path:match("[^/\\]+$") or out_path)
+      busy("Saving clip", out_path:match("[^/\\]+$") or out_path)
       res = run_subprocess({
         args = command,
         cancellable = false
@@ -2088,10 +2144,10 @@ encode = function(region, startTime, endTime)
       res = ewp:startEncode(command)
     end
     if res then
-      message("Encoded", out_path, options.message_duration)
+      message("Clip saved", out_path, options.message_duration)
       emit_event("encode-finished", "success")
     else
-      message("Encode failed", "see the log for why")
+      message("Couldn't save the clip", "see the log for why")
       emit_event("encode-finished", "fail")
     end
     os.remove(get_pass_logfile_path(out_path))
@@ -2175,22 +2231,22 @@ do
       local width, height = math.abs(self.pointA.x - self.pointB.x), math.abs(self.pointA.y - self.pointB.y)
       ass:append(panel_text("Crop", {
         {
-          "1  Point A",
+          "1  First corner",
           tostring(self.pointA.x) .. ", " .. tostring(self.pointA.y)
         },
         {
-          "2  Point B",
+          "2  Second corner",
           tostring(self.pointB.x) .. ", " .. tostring(self.pointB.y)
         },
         {
           "r  Reset",
-          "whole frame"
+          "full frame"
         },
         {
           "   Size",
           tostring(width) .. "x" .. tostring(height)
         }
-      }, nil, "1/2 set a corner at the cursor  ENTER confirm  ESC cancel"))
+      }, nil, "1 / 2 put a corner at the mouse   Enter confirm   Esc cancel"))
       return mp.set_osd_ass(window.w, window.h, ass.text)
     end
   }
@@ -2375,9 +2431,11 @@ do
     getDisplayValue = function(self)
       local _exp_0 = self.optType
       if "bool" == _exp_0 then
-        return self.value and "yes" or "no"
+        return self.value and "on" or "off"
       elseif "int" == _exp_0 then
-        if self.opts.altDisplayNames and self.opts.altDisplayNames[self.value] then
+        if self.opts.format then
+          return self.opts.format(self.value)
+        elseif self.opts.altDisplayNames and self.opts.altDisplayNames[self.value] then
           return self.opts.altDisplayNames[self.value]
         else
           return tostring(self.value) .. (self.opts.unit or "")
@@ -2490,8 +2548,8 @@ do
           end
         end
       end
-      ass:append(panel_text("Encode options", rows, selected,
-        "Left/Right change  Up/Down pick  ENTER save  ESC cancel"))
+      ass:append(panel_text("Clip settings", rows, selected,
+        "← → change   ↑ ↓ choose   Enter save   Esc cancel"))
       return mp.set_osd_ass(window_w, window_h, ass.text)
     end
   }
@@ -2505,7 +2563,7 @@ do
         possibleValues = {
           {
             -1,
-            "source"
+            "original"
           }
         }
       }
@@ -2530,23 +2588,20 @@ do
       local filesizeOpts = {
         step = 250,
         min = 0,
-        unit = " kB",
-        altDisplayNames = {
-          [0] = "constant quality"
-        }
+        format = size_text
       }
       local crfOpts = {
         step = 1,
         min = -1,
         altDisplayNames = {
-          [-1] = "disabled"
+          [-1] = "off"
         }
       }
       local fpsOpts = {
         possibleValues = {
           {
             -1,
-            "source"
+            "original"
           },
           {
             15
@@ -2639,11 +2694,11 @@ do
         },
         {
           "twopass",
-          Option("bool", "Two pass", options.twopass)
+          Option("bool", "Two-pass encode", options.twopass)
         },
         {
           "apply_current_filters",
-          Option("bool", "Current filters", options.apply_current_filters)
+          Option("bool", "Keep video filters", options.apply_current_filters)
         },
         {
           "scale_height",
@@ -2651,27 +2706,27 @@ do
         },
         {
           "strict_filesize_constraint",
-          Option("bool", "Strict size", options.strict_filesize_constraint)
+          Option("bool", "Never go over size", options.strict_filesize_constraint)
         },
         {
           "write_filename_on_metadata",
-          Option("bool", "Name in metadata", options.write_filename_on_metadata)
+          Option("bool", "Title from filename", options.write_filename_on_metadata)
         },
         {
           "target_filesize",
-          Option("int", "Target size", options.target_filesize, filesizeOpts)
+          Option("int", "File size", options.target_filesize, filesizeOpts)
         },
         {
           "crf",
-          Option("int", "CRF", options.crf, crfOpts)
+          Option("int", "Quality (CRF)", options.crf, crfOpts)
         },
         {
           "fps",
-          Option("list", "FPS", options.fps, fpsOpts)
+          Option("list", "Frame rate", options.fps, fpsOpts)
         },
         {
           "gif_dither",
-          Option("list", "GIF dither", options.gif_dither, gifDitherOpts, function()
+          Option("list", "GIF dithering", options.gif_dither, gifDitherOpts, function()
             return self.options[1][2]:getValue() == "gif"
           end)
         },
@@ -2793,7 +2848,7 @@ do
       local ass = assdraw.ass_new()
       ass:new_event()
       self:setup_text(ass)
-      ass:append(panel_text("Preview", { }, nil, "ESC back to the clip menu"))
+      ass:append(panel_text("Preview", { }, nil, "Esc back to Clipper"))
       return mp.set_osd_ass(window_w, window_h, ass.text)
     end,
     cancel = function(self)
@@ -2898,12 +2953,12 @@ do
       local rows = { }
       for i, entry in ipairs(self.entries) do
         rows[i] = {
-          entry[1] .. "  " .. entry[2],
+          string.format("%-8s%s", entry[1], entry[2]),
           entry[4] and entry[4](self) or ""
         }
       end
-      ass:append(panel_text("Clip to WebM", rows, self.selected,
-        "Up/Down pick  ENTER run  or press the key beside it  ESC close"))
+      ass:append(panel_text("Clipper", rows, self.selected,
+        "↑ ↓ choose   Enter run   or press its key   Esc close"))
       return mp.set_osd_ass(window_w, window_h, ass.text)
     end,
     move = function(self, direction)
@@ -2965,15 +3020,15 @@ do
     encode = function(self)
       self:hide()
       if self.startTime < 0 then
-        message("Clip to WebM", "set a start time first")
+        message("Clipper", "mark a start first")
         return 
       end
       if self.endTime < 0 then
-        message("Clip to WebM", "set an end time first")
+        message("Clipper", "mark an end first")
         return 
       end
       if self.startTime >= self.endTime then
-        message("Clip to WebM", "the start is after the end")
+        message("Clipper", "the start is after the end")
         return 
       end
       return encode(self.region, self.startTime, self.endTime)
@@ -3063,8 +3118,9 @@ do
           return self:run()
         end
       }
-      -- { key, label, method, value shown beside it }. The keys still work
-      -- directly; the list is for when you would rather arrow down to it.
+      -- { key as shown, label, method, value shown beside it }. The keys
+      -- still work directly; the list is for when you would rather arrow down
+      -- to it. The keys themselves are bound in keybinds above.
       local time_of
       time_of = function(field)
         return function(page)
@@ -3074,24 +3130,24 @@ do
       self.entries = {
         {
           "1",
-          "Set start",
+          "Mark start",
           "setStartTime",
           time_of("startTime")
         },
         {
           "2",
-          "Set end",
+          "Mark end",
           "setEndTime",
           time_of("endTime")
         },
         {
-          "!",
-          "Jump to start",
+          "Shift+1",
+          "Go to start",
           "jumpToStartTime"
         },
         {
-          "@",
-          "Jump to end",
+          "Shift+2",
+          "Go to end",
           "jumpToEndTime"
         },
         {
@@ -3102,21 +3158,21 @@ do
             if page.region:is_valid() then
               return tostring(page.region.w) .. "x" .. tostring(page.region.h)
             end
-            return "whole frame"
+            return "full frame"
           end
         },
         {
           "o",
-          "Options",
+          "Settings",
           "changeOptions",
           function()
             local format = formats[options.output_format]
             local bits = {
               format and format.displayName or options.output_format,
-              options.scale_height > 0 and tostring(options.scale_height) .. "p" or "source size"
+              options.scale_height > 0 and tostring(options.scale_height) .. "p" or "original size"
             }
             if options.target_filesize > 0 then
-              bits[#bits + 1] = tostring(options.target_filesize) .. " kB"
+              bits[#bits + 1] = size_text(options.target_filesize)
             end
             return table.concat(bits, ", ")
           end
@@ -3128,7 +3184,7 @@ do
         },
         {
           "e",
-          "Encode",
+          "Save clip",
           "encode"
         }
       }
@@ -3166,7 +3222,7 @@ do
 end
 monitor_dimensions()
 local mainPage = MainPage()
-mp.add_key_binding(options.keybind, "display-webm-encoder", (function()
+mp.add_key_binding(options.keybind, "open", (function()
   local _base_0 = mainPage
   local _fn_0 = _base_0.show
   return function(...)

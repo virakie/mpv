@@ -43,7 +43,7 @@ local OUTLINE = "&H36231E&"
 -- Descriptions for script keys that have no input.conf comment, keyed by
 -- the "script/binding" name after script-binding.
 local SCRIPT_KEYS = {
-    ["webm/display-webm-encoder"] = "Clip to WebM",
+    ["clipper/open"] = "Clipper: cut a clip from this video",
     ["gifgen/set_gif_start"] = "GIF: mark the start",
     ["gifgen/set_gif_end"] = "GIF: mark the end",
     ["gifgen/make_gif"] = "GIF: make it",
@@ -64,7 +64,7 @@ local RULES = {
     { "Menus & lists", { "show%-text" } },
     { "Menus & lists", { "uosc_menu/", "uosc/", "track_picker/", "chapters_menu/",
                          "keybind%-visualizer", "sub%-seek%-list", "cheatsheet/" } },
-    { "Capture & share", { "screenshot", "clipshot/", "gifgen/", "webm/", "smartcopypaste/" } },
+    { "Capture & share", { "screenshot", "clipshot/", "gifgen/", "clipper/", "smartcopypaste/" } },
     { "Subtitles", { "sub" } },
     { "Seeking", { "seek", "chapter", "playlist", "frame%-", "ab%-loop" } },
     { "Audio", { "volume", "mute", "audio" } },
