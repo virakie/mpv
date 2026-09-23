@@ -56,13 +56,15 @@ local function stop_spinning()
     end
 end
 
-mp.register_script_message('say', function(label, state, detail)
+-- An optional fourth argument holds it up for that many seconds instead of
+-- osd-duration, for a notice worth reading, like where a file was saved.
+mp.register_script_message('say', function(label, state, detail, seconds)
     stop_spinning()
     overlay.data = body(ANCHOR, label, state, detail)
     overlay:update()
 
     if hide_timer then hide_timer:kill() end
-    hide_timer = mp.add_timeout(mp.get_property_number('osd-duration', 1000) / 1000, function()
+    hide_timer = mp.add_timeout(tonumber(seconds) or mp.get_property_number('osd-duration', 1000) / 1000, function()
         overlay:remove()
     end)
 end)
