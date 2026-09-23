@@ -119,7 +119,7 @@ onto their base, so "scurried" finds "scurry" with no network.
 | `s` | screenshot to file |
 | `Ctrl` + `c` | copy the frame to the clipboard, subtitles included |
 | `Ctrl` + `Shift` + `c` | copy the frame without subtitles |
-| `Ctrl` + `Alt` + `k` | on-screen keyboard of every keybind, searchable |
+| `?` or `Ctrl` + `Alt` + `k` | every shortcut, grouped by what it does; type to filter |
 | `F4` | list every subtitle line, filter and jump to one |
 | `Ctrl` + `←` `→` `↓` | previous / next / replay subtitle line |
 | `Ctrl` + `r` | refresh: reload this file at the same spot |
@@ -151,7 +151,8 @@ Drag the seek bar to skim. Drag anywhere else to move the window.
 | `scripts/substyle.lua` | style switching + adjust panel |
 | `scripts/subdict.lua` | dictionary |
 | `scripts/presence.lua` | works out what you are watching, for Discord |
-| `scripts/keybind-visualizer.lua` | the `F6` keyboard map |
+| `scripts/cheatsheet.lua` | the `?` shortcut sheet |
+| `scripts/keybind-visualizer.lua` | the keyboard map (Tools menu) |
 | `scripts/sub-seek.lua` | the `F4` subtitle line list |
 | `scripts/osd-theme.lua` | one look for on-screen messages |
 | `scripts/track-menu.lua` | `Tab` picker |
@@ -175,6 +176,9 @@ Several scripts come from [v-amorim/moonlight-mpv](https://github.com/v-amorim/m
 `keybind-visualizer`, `sub-seek`, `osd-theme`, `pause-indicator`, `restart-mpv`,
 `reset-all`, `skip-chapters`, and the three menu scripts, along with its uosc
 theme and the cascade-menu patch.
+
+`cheatsheet.lua` is a Lua port of [ento/mpv-cheatsheet](https://github.com/ento/mpv-cheatsheet)
+(MIT, © 2019 Marica Odagaki), rebuilt to read the live bindings.
 
 The interface itself is [uosc](https://github.com/tomasklaen/uosc) 5.13.0, with
 that patch applied so submenus cascade to the right of the pointer.
