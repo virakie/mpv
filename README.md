@@ -1,6 +1,6 @@
 # mpv config
 
-My mpv setup: switchable subtitle styles, a subtitle dictionary, a thin [uosc][uosc] interface, and a handful of scripts, all in one dark theme.
+Switchable subtitle styles, a subtitle dictionary, a thin [uosc][uosc] interface, and a handful of scripts, all in one dark theme.
 
 ![mpv playing](.github/screenshots/hero.jpg)
 
