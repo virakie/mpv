@@ -15,6 +15,7 @@ $skip = @(
     "presence-key.txt",       # TMDB key
     "presence-cache.json",    # which show is in which folder
     "subdict-cache.json",     # looked-up words
+    "subdict-hid-subs",       # dictionary's "subtitles were hidden" marker
     "substyle-state.txt",     # last used subtitle preset
     "*.before-substyle",      # backups the adjust panel made
     "dist", ".git", ".github", "package.ps1"
@@ -44,7 +45,19 @@ if (Test-Path $custom) {
         Set-Content $custom -Encoding utf8
 }
 
-Compress-Archive -Path (Join-Path $stage "*") -DestinationPath $zip -Force
+# Not Compress-Archive: on Windows PowerShell 5.1 it stores paths with
+# backslashes, which unzip on Linux and macOS turns into flat file names.
+Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
+$archive = [System.IO.Compression.ZipFile]::Open($zip, "Create")
+try {
+    Get-ChildItem -Path $stage -Recurse -File -Force | ForEach-Object {
+        $entry = $_.FullName.Substring($stage.Length + 1).Replace("\", "/")
+        [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+            $archive, $_.FullName, $entry, "Optimal")
+    }
+} finally {
+    $archive.Dispose()
+}
 Remove-Item $stage -Recurse -Force
 
 $size = [math]::Round((Get-Item $zip).Length / 1MB, 1)
