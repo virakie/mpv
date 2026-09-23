@@ -73,7 +73,7 @@ Nine styles and seven fonts, flipped through separately. `Alt` + `↑` `↓` cha
 | `Ctrl` + `r` | reload the file at the same spot |
 | `?` | everything else |
 
-## Good to know
+## Misc
 
 - Every video loops. Delete `loop=yes` from `mpv.conf` to stop it.
 - Settings for each script are in `script-opts/`.
