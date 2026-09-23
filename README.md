@@ -110,7 +110,8 @@ onto their base, so "scurried" finds "scurry" with no network.
 | `←` `→` | seek 2s |
 | `↑` `↓` | volume |
 | `=` / `-` | speed |
-| `[` `]` | playlist |
+| `[` `]` | previous / next in the playlist |
+| `p` | playlist menu (`p` again closes it) |
 | `c` | crop |
 | `e` / `E` | GIF start / end, then `Ctrl` + `e` to make |
 | `W` | webm encoder |

@@ -1165,6 +1165,9 @@ function Menu:search_query_delete(event, word_mode)
 	end
 end
 
+-- Local edit: menu type = the key in input.conf that opens it.
+local MENU_TOGGLE_KEYS = {playlist = 'p'}
+
 function Menu:search_text_input(info)
 	local menu = self.current
 	if not menu.search and menu.search_style == 'disabled' then return end
@@ -1175,6 +1178,13 @@ function Menu:search_text_input(info)
 			key_text = info.key_name:match('KP_?(.+)')
 			if not key_text then return end
 			if key_text == 'DEC' then key_text = '.' end
+		end
+		-- Local edit: the letter that opened a menu closes it again, unless a
+		-- search is already under way. Type-to-search's catch-all binding wins
+		-- over any other script's, so this can't be done from input.conf.
+		if not menu.search and MENU_TOGGLE_KEYS[self.type] == key_text then
+			Menu:close()
+			return
 		end
 		if not menu.search then self:search_start() end
 		self:search_query_insert(key_text)
